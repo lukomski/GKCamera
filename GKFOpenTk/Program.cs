@@ -11,7 +11,7 @@ namespace GKFOpenTk
     {
         static void Main(string[] args)
         {
-            GameWindow window = new GameWindow(width: 800, height: 600);
+            GameWindow window = new GameWindow(width: 1000, height: 600);
             Game game = new Game(window);
 
             window.Run();
