@@ -42,7 +42,7 @@ namespace GKFOpenTk
             Block block = new Block(point, shapes);
             blocks.Add(new Block(point, shapes));
 
-            List<Tuple<SN.Vector3, SN.Vector3>> l = block.getEdges();
+            List<Tuple<SN.Vector3, SN.Vector3>> l = block.GetEdges();
             foreach (var p in l)
             {
 
@@ -71,8 +71,8 @@ namespace GKFOpenTk
             }
             else if (state.IsKeyDown(Key.A))
             {
-                var attitude = camera.GetAttitude();
-                attitude.X -= step;
+                var attitude = camera.Attitude;
+                attitude.X -= step/10;
                 camera.SetAttitude(attitude);
                 Console.WriteLine("attitude = " + camera.GetAttitude().ToString());
             }
@@ -83,61 +83,46 @@ namespace GKFOpenTk
                 camera.SetAttitude(attitude);
                 Console.WriteLine("attitude = " + camera.GetAttitude().ToString());
             }
+
+
+            // POS STRAIGHT/BACK/LEFT/RIGHT/UP/DOWN
             else if (state.IsKeyDown(Key.L))
             {
                 var point = camera.Position;
                 point.X -= step*10;
                 camera.SetPoint(point);
-
-            //    var scenePoint = camera.GetScenePoint();
-            //   scenePoint.X += step;
-            //    camera.SetScenePoint(scenePoint);
-            //    Console.WriteLine("scenePoint = " + camera.GetScenePoint().ToString());
             } 
-
             else if (state.IsKeyDown(Key.J))
             {
                 var point = camera.Position;
-                point.X += step*10;
+              //  point.X += step*10;
+                SN.Vector3 v = camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(-1,0,0));
+                point += v;
                 camera.SetPoint(point);
-
-            //    var scenePoint = camera.GetScenePoint();
-            //    scenePoint.X -= step;
-            //    camera.SetScenePoint(scenePoint);
-            //    Console.WriteLine("scenePoint = " + camera.GetScenePoint().ToString());
             } 
             else if (state.IsKeyDown(Key.I))
             {
                 var point = camera.Position;
-                point.Y += step*10;
+                point += SN.Vector3.Multiply(step*10, camera.Attitude);
                 camera.SetPoint(point);
-            //    var scenePoint = camera.GetScenePoint();
-            //    scenePoint.Y += step;
-            //    camera.SetScenePoint(scenePoint);
-                Console.WriteLine("scenePoint = " + camera.Position.ToString());
             } 
             else if (state.IsKeyDown(Key.K))
             {
                 var point = camera.Position;
-                point.Y -= step*10;
+                point -= SN.Vector3.Multiply(step*10, camera.Attitude);
                 camera.SetPoint(point);
-
-            //    var scenePoint = camera.GetScenePoint();
-            //    scenePoint.Y -= step;
-            //    camera.SetScenePoint(scenePoint);
+        
                 Console.WriteLine("scenePoint = " + camera.Position.ToString());
             }
-            else if (state.IsKeyDown(Key.U)) {
-                var v = camera.Position;
-                v.Z += step;
-                camera.SetPoint(v);
-                Console.WriteLine("point = " + camera.Position.ToString());
+            else if (state.IsKeyDown(Key.O)) {
+                var p = camera.Position;
+                p.Y -= step*10;
+                camera.SetPoint(p);
             }
-            else if (state.IsKeyDown(Key.M)) {
-                var v = camera.Position;
-                v.Z -= step;
-                camera.SetPoint(v);
-                Console.WriteLine("point = " + camera.Position.ToString());
+            else if (state.IsKeyDown(Key.U)) {
+                var p = camera.Position;
+                p.Y += step*10;
+                camera.SetPoint(p);
             }
             else {
                 Console.WriteLine("unhadled key " + state.GetType());
@@ -160,14 +145,15 @@ namespace GKFOpenTk
             keyboardState = OpenTK.Input.Keyboard.GetState();
 
             // Check Key Presses
-            if (KeyPress(Key.Right)) {
+            if (KeyPress(Key.Right))
+            {
                 // move position camera right
-                var p = this.camera.Position;
+                //  var p = this.camera.Position;
+                camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 0, 0));
 
+                // Store current state for next comparison;
+                lastKeyboardState = keyboardState;
             }
-
-            // Store current state for next comparison;
-            lastKeyboardState = keyboardState;
         }
         public bool KeyPress(Key key)
         {
@@ -178,14 +164,14 @@ namespace GKFOpenTk
         {
             GL.ClearColor(Color.FromArgb(5, 5, 25));
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            this.drawLine(new System.Numerics.Vector2(-300, 300), new SN.Vector2(1 * window.Width / 2, -1 * window.Height/2), Color.Purple);
+            this.DrawLine(new System.Numerics.Vector2(-300, 300), new SN.Vector2(1 * window.Width / 2, -1 * window.Height/2), Color.Purple);
 
 
             foreach (Block block in blocks)
             {
-                for (int i = 0; i <  block.getEdges().Count; i++) 
+                for (int i = 0; i <  block.GetEdges().Count; i++) 
                 {
-                    var p = block.getEdges()[i];
+                    var p = block.GetEdges()[i];
                     var a = p.Item1;
                     var b = p.Item2;
 
@@ -224,7 +210,7 @@ namespace GKFOpenTk
                         color = Color.Olive;
                     }
 
-                    this.drawLine(pA, pB, color);
+                    this.DrawLine(pA, pB, color);
 
                 }
             }       
@@ -233,7 +219,7 @@ namespace GKFOpenTk
             window.SwapBuffers();
         }
 
-        private void drawLine(SN.Vector2 a, SN.Vector2 b, Color color)
+        private void DrawLine(SN.Vector2 a, SN.Vector2 b, Color color)
         {
             GL.Begin(PrimitiveType.Lines);
             GL.Disable(EnableCap.DepthTest);

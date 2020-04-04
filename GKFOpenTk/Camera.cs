@@ -15,10 +15,9 @@ namespace GKFOpenTk
         public Vector3 Position;
 
         private Plane Plane;    
-        private Vector3 Attitude;
+        public Vector3 Attitude;
         public float Distance;
         private Vector2 ScenePoint;
-        private Vector2 SceneShape;
 
         public Vector2 GetScenePoint() {
             return ScenePoint;
@@ -85,9 +84,19 @@ namespace GKFOpenTk
             // move plane to set center i (OX, OY, OZ) = (0, 0, 0)
             Vector3 Am = Aprim - Pctr;
 
-            // static vector of direction
-            Vector3 Z = new Vector3(0,0,1);
+            var mOXRot = this.GetOXRotMatrix();
+            var mOYRot = this.GetOYRotMatrix();
 
+            Vector3 v = (mOXRot * mOYRot) * Am;
+
+            return new Vector2 {
+                X = v.X,
+                Y = v.Y
+            };
+        }
+
+         public Matrix3x3 GetOXRotMatrix() {
+            var Ca = Attitude;
             // translate by OX
             float cosAlfa = (-Ca.Z) / (float)Math.Sqrt(Ca.Y * Ca.Y + Ca.Z * Ca.Z);
             float sinAlfa = (-Ca.Y) / (float)Math.Sqrt(Ca.Y * Ca.Y + Ca.Z * Ca.Z);
@@ -108,7 +117,37 @@ namespace GKFOpenTk
                 M32 = sinAlfa,
                 M33 = cosAlfa
             };
+            return mOXRot;
+         }
+        public Matrix3x3 GetRevOXRotMatrix()
+        {
+            var Ca = Attitude;
+            // translate by OX
+            float cosAlfa = (-Ca.Z) / (float)Math.Sqrt(Ca.Y * Ca.Y + Ca.Z * Ca.Z);
+            float sinAlfa = (-Ca.Y) / (float)Math.Sqrt(Ca.Y * Ca.Y + Ca.Z * Ca.Z);
 
+            var mOXRot = new Matrix3x3
+            {
+                // first row
+                M11 = 1,
+                M12 = 0,
+                M13 = 0,
+
+                // scnd row
+                M21 = 0,
+                M22 = cosAlfa,
+                M23 = sinAlfa,
+
+                // third row
+                M31 = 0,
+                M32 = -sinAlfa,
+                M33 = cosAlfa
+            };
+            return mOXRot;
+        }
+
+        public Matrix3x3 GetOYRotMatrix() {
+            var Ca = Attitude;
             // translate by OY
             float cosBeta = (-Ca.Z) / (float)Math.Sqrt(Ca.X * Ca.X + Ca.Z * Ca.Z);
             float sinBeta = (-Ca.X) / (float)Math.Sqrt(Ca.X * Ca.X + Ca.Z * Ca.Z);
@@ -129,15 +168,43 @@ namespace GKFOpenTk
                 M32 = 0,
                 M33 = cosBeta
             };
-
-            Vector3 v = (mOXRot * mOYRot) * Am;
-
-            return new Vector2 {
-                X = v.X,
-                Y = v.Y
-            };
+            return mOYRot;
         }
+        public Matrix3x3 GetRevOYRotMatrix()
+        {
+            var Ca = Attitude;
+            // translate by OY
+            float cosBeta = (-Ca.Z) / (float)Math.Sqrt(Ca.X * Ca.X + Ca.Z * Ca.Z);
+            float sinBeta = (-Ca.X) / (float)Math.Sqrt(Ca.X * Ca.X + Ca.Z * Ca.Z);
 
-        
+            var mOYRot = new Matrix3x3
+            {
+                // first row
+                M11 = cosBeta,
+                M12 = 0,
+                M13 = -sinBeta,
+
+                // scnd row
+                M21 = 0,
+                M22 = 1,
+                M23 = 0,
+
+                // third row
+                M31 = sinBeta,
+                M32 = 0,
+                M33 = cosBeta
+            };
+            return mOYRot;
+        }
+        public Vector3 MapRelativeMoveToNonRelativeMove(Vector3 v) {
+            var oYRot = this.GetOYRotMatrix();
+            var oXRot = this.GetOXRotMatrix();
+            var revOXRot = this.GetRevOXRotMatrix();
+            var revOYRot = this.GetRevOYRotMatrix();
+
+            var m = oYRot * revOYRot;
+            Console.WriteLine("m = \n" + m);
+            return new Vector3();
+         }
     }
 }

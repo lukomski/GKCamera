@@ -13,13 +13,10 @@ namespace GKFOpenTk.Tests
     public class Matrix3x3Tests
     {
         [TestMethod()]
-        public vo
-            
-            
-     
-            eratorMultiplyTest()
+        public void OperatorMultiplyTest()
         {
-            Matrix3x3 m1 = new Matrix3x3 {
+            Matrix3x3 m1 = new Matrix3x3
+            {
                 // first row
                 M11 = 1,
                 M12 = 0,
@@ -73,7 +70,7 @@ namespace GKFOpenTk.Tests
         }
 
         [TestMethod()]
-        public void OperatorMultiplyW
+        public void OperatorMultiplyWithVector()
         {
             Matrix3x3 m = new Matrix3x3
             {
@@ -93,7 +90,8 @@ namespace GKFOpenTk.Tests
                 M33 = 1
             };
 
-            Vector3 v = new Vector3 {
+            Vector3 v = new Vector3
+            {
                 X = 1,
                 Y = 0,
                 Z = 1
@@ -107,5 +105,29 @@ namespace GKFOpenTk.Tests
             Assert.AreEqual(2, v1.Z);
         }
 
+        [TestMethod()]
+        public void GetDeterminationTest()
+        {
+            Matrix3x3 m = new Matrix3x3
+            {
+                // first row
+                M11 = 1,
+                M12 = 4,
+                M13 = 2,
+
+                // scnd row
+                M21 = 2,
+                M22 = -3,
+                M23 = 2,
+
+                // third row
+                M31 = 1,
+                M32 = 0,
+                M33 = 0
+            };
+
+            var v = m.Determinate();
+            Assert.AreEqual(14, v);
+        }
     }
 }

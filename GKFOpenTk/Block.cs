@@ -15,7 +15,7 @@ namespace GKFOpenTk
             this.position = position;
             this.shapes = shapes;
         }
-        public List<Tuple<Vector3, Vector3>> getEdges()
+        public List<Tuple<Vector3, Vector3>> GetEdges()
         {
             var edges = new List<Tuple<Vector3, Vector3>>();
             // front

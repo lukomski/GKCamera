@@ -51,6 +51,20 @@ namespace GKFOpenTk
                 Z = m.M31 * v.X + m.M32 * v.Y + m.M33 * v.Z
             };
         }
+        public float Determinate() {
+            return M11 * M22 * M33
+                + M12 * M23 * M31
+                + M13 * M21 * M32
+                - M31 * M22 * M13
+                - M32 * M23 * M11
+                - M33 * M21 * M12;
+        }
 
+        public override string ToString()
+        {
+            return M11 + " " + M12 + " " + M13 + "\n"
+                + M21 + " " + M22 + " " + M23 + "\n"
+                + M31 + " " + M32 + " " + M33 + "\n";
+        }
     }
 }
