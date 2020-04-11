@@ -72,7 +72,7 @@ namespace GKFOpenTk.Tests
         [TestMethod()]
         public void OperatorMultiplyWithVector()
         {
-            Matrix3x3 m = new Matrix3x3
+            var m = new Matrix3x3
             {
                 // first row
                 M11 = 1,
@@ -128,6 +128,77 @@ namespace GKFOpenTk.Tests
 
             var v = m.Determinate();
             Assert.AreEqual(14, v);
+        }
+
+        [TestMethod()]
+        public void GetRevOXRotMatrixTest()
+        {
+            // set camera
+            Camera camera = new Camera();
+            camera.SetPoint(new Vector3(camera.Distance, 150, 150));
+            camera.SetAttitude(new Vector3(-1, 0, 0));
+            Console.WriteLine("Plane = " + camera.Plane.ToString());
+
+            var xRot = camera.GetRevOXRotMatrix();
+            Console.WriteLine("xRot = " + xRot.ToString());
+        }
+
+        [TestMethod()]
+        public void MapPointToPlateWithNoChangesTest()
+        {
+            // set camera
+            Camera camera = new Camera();
+            camera.SetPoint(new Vector3(0, 0, -camera.Distance));
+            camera.SetAttitude(new Vector3(0, 0, 1));
+            Console.WriteLine("Plane = " + camera.Plane.ToString());
+
+            var p = camera.MapPointToPlate(new Vector3(300, 300, 0));
+
+            Console.WriteLine("p = " + p.ToString());
+            Assert.AreEqual(new Vector2(300, 300), p);
+        }
+        [TestMethod()]
+        public void MapPointOYToPlateTest()
+        {
+            // set camera
+            Camera camera = new Camera();
+            camera.SetPoint(new Vector3(camera.Distance, 0, 0));
+            camera.SetAttitude(new Vector3(-1, 0, 0));
+            Console.WriteLine("Plane = " + camera.Plane.ToString());
+
+            var p = camera.MapPointToPlate(new Vector3(0, 300, 300));
+
+            Console.WriteLine("p = " + p.ToString());
+            Assert.AreEqual(new Vector2(300, 300), p);
+        }
+
+        [TestMethod()]
+        public void MapPointOXToPlateTest()
+        {
+            // set camera
+            Camera camera = new Camera();
+            camera.SetPoint(new Vector3(camera.Distance, 0, 0));
+            camera.SetAttitude(new Vector3(0, 1, 0));
+            Console.WriteLine("Plane = " + camera.Plane.ToString());
+
+            var p = camera.MapPointToPlate(new Vector3(0, 0, 300));
+
+            Console.WriteLine("p = " + p.ToString());
+            Assert.AreEqual(new Vector2(0, -300), p);
+        }
+
+        [TestMethod()]
+        public void MapRelativeMoveToNonRelativeMoveTest()
+        {
+            // set camera
+            Camera camera = new Camera();
+            camera.SetPoint(new Vector3(camera.Distance, 0, 0));
+            camera.SetAttitude(new Vector3(-1, 0, 0));
+
+            var v = camera.MapRelativeMoveToNonRelativeMove(new Vector3(-1, 0, 0));
+
+            Console.WriteLine("v = " + v.ToString());
+            Assert.AreEqual(new Vector3(0,0,1), v);
         }
     }
 }
