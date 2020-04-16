@@ -58,7 +58,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CameraTests.cs" />
-    <Compile Include="Matrix3x3Tests.cs" />
+    <Compile Include="HelperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

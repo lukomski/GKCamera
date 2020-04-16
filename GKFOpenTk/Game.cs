@@ -16,7 +16,7 @@ namespace GKFOpenTk
     {
         public GameWindow window;
         private List<Block> blocks = new List<Block>();
-        private Camera camera = new Camera();
+        private Camera camera;
 
         KeyboardState keyboardState, lastKeyboardState;
 
@@ -25,16 +25,14 @@ namespace GKFOpenTk
         public Game(GameWindow window)
         {
             this.window = window;
+            // set camera
+            this.camera = new Camera(window.Width, window.Height);
 
             window.Load += Window_Load;
             window.RenderFrame += Window_RenderFrame;
             window.UpdateFrame += Window_UpdateFrame;
             window.Closing += Window_Closing;
-            window.KeyPress += Window_KeyPress;
-
-
-            // set camera
-            Camera camera = new Camera();
+            window.KeyPress += Window_KeyPress;         
 
             var point = new SN.Vector3(0, 0, 0);
             var shapes = new SN.Vector3(300, 300, 300);
@@ -73,9 +71,10 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.A))
             {
                 var attitude = camera.Attitude;
-                var alfa = -0.1;
+                var alfa = -0.05;
                 var m = camera.GetOYRotMatrix((float)Math.Cos(alfa), (float)Math.Sin(alfa));
-                var vec = SN.Vector4.Transform(new SN.Vector4(attitude, 0), m);
+                var mT = SN.Matrix4x4.Transpose(m);
+                var vec = SN.Vector4.Transform(new SN.Vector4(attitude, 1), m);
                 var v = new SN.Vector3(vec.X, vec.Y, vec.Z);
                 //var Beta = 0.01;
                 //var nA = attitude;
@@ -89,7 +88,7 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.D))
             {
                 var attitude = camera.Attitude;
-                var alfa = 0.1;
+                var alfa = 0.05;
                 var m = camera.GetOYRotMatrix((float)Math.Cos(alfa), (float)Math.Sin(alfa));
                 var vec = SN.Vector4.Transform(new SN.Vector4(attitude, 0), m);
                 var v = new SN.Vector3(vec.X, vec.Y, vec.Z);
@@ -113,39 +112,48 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.L))
             {
                 var point = camera.Position;
-                point += camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(5, 0, 0));
+                var move = Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(5, 0, 0));
+                point += move;
                 camera.SetPoint(point);
+                Console.WriteLine("move = " + move);
             } 
             else if (state.IsKeyDown(Key.J))
             {
                 var point = camera.Position;
-                point -= camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(5, 0, 0));
-                Console.WriteLine("left vector = " + camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(1, 0, 0)));
+                var move = -Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(5, 0, 0));
+                point += move;
+                Console.WriteLine("move = " + move);
                 camera.SetPoint(point);
-                Console.WriteLine("point = " + point);
             } 
             else if (state.IsKeyDown(Key.I))
             {
                 var point = camera.Position;
-                point += camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 0, 5));
+                var move = Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 0, 5));
+                point += move;
                 camera.SetPoint(point);
-                Console.WriteLine("point = " + point);
+                Console.WriteLine("move = " + move);
             } 
             else if (state.IsKeyDown(Key.K))
             {
                 var point = camera.Position;
-                point -= camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 0, 5));
+                var move = -Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 0, 5));
+                point += move;
                 camera.SetPoint(point);
+                Console.WriteLine("move = " + move);
             }
             else if (state.IsKeyDown(Key.O)) {
                 var point = camera.Position;
-                point += camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 5, 0));
+                var move = Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 5, 0));
+                point += move;
                 camera.SetPoint(point);
+                Console.WriteLine("move = " + move);
             }
             else if (state.IsKeyDown(Key.U)) {
                 var point = camera.Position;
-                point -= camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 5, 0));
+                var move = -Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 5, 0));
+                point += move;
                 camera.SetPoint(point);
+                Console.WriteLine("move = " + move);
             }
             else {
                 Console.WriteLine("unhadled key " + state.GetType());
@@ -263,8 +271,10 @@ namespace GKFOpenTk
 
             foreach (SN.Vector3 axe in l)
             {
-                SN.Vector2 p = camera.ComputePointOnPlane(axe);
-                SN.Vector2 oo = camera.ComputePointOnPlane(new SN.Vector3(0, 0, 0));
+                var p3d = camera.ComputePointOnPlane(axe);
+                var oo3d = camera.ComputePointOnPlane(new SN.Vector3(0, 0, 0));
+                SN.Vector2 p = new SN.Vector2(p3d.X, p3d.Y);
+                SN.Vector2 oo = new SN.Vector2(oo3d.X, oo3d.Y);
                 Color c = Color.Red;
                 if (axe.Y>0) {
                     c = Color.Yellow;
@@ -285,8 +295,8 @@ namespace GKFOpenTk
             GL.Disable(EnableCap.DepthTest);
             GL.LineWidth(3);// not working
             GL.Color3(color);
-            GL.Vertex2(camera.GetScenePoint().X + a.X/(window.Width/2), camera.GetScenePoint().Y + a.Y/(window.Height/2));
-            GL.Vertex2(camera.GetScenePoint().X + b.X/(window.Width/2), camera.GetScenePoint().Y + b.Y/(window.Height/2));
+            GL.Vertex2(a.X/(window.Width/2), a.Y/(window.Height/2));
+            GL.Vertex2(b.X/(window.Width/2), b.Y/(window.Height/2));
             GL.End();
         }
     }
