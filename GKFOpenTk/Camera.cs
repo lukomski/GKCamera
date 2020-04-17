@@ -16,7 +16,6 @@ namespace GKFOpenTk
 
         public static Vector3 StandardAttitude = new Vector3(0,0,1);
         public float Distance;
-        private Vector2 ScreenDimm;
         public Vector3 Rotations;
 
         public void SetPoint(Vector3 value)
@@ -31,7 +30,6 @@ namespace GKFOpenTk
 
         public Camera(float screenWidth, float screenHeight)
         {
-            this.ScreenDimm = new Vector2(screenWidth, screenHeight);
             this.Distance = 400;
             //this.Position = new Vector3(0, 0, -700);
             this.Position = new Vector3(0, 0, -700);

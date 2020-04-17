@@ -148,6 +148,14 @@ namespace GKFOpenTk
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
             }
+            else if (state.IsKeyDown(Key.P))
+            {
+                camera.Distance += 5;
+            }
+            else if (state.IsKeyDown(Key.Semicolon))
+            {
+                camera.Distance -= 5;
+            }
             else {
                 Console.WriteLine("unhadled key " + state.GetType());
             }
