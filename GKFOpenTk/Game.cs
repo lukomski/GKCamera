@@ -34,15 +34,24 @@ namespace GKFOpenTk
             window.Closing += Window_Closing;
             window.KeyPress += Window_KeyPress;         
 
-            var point = new SN.Vector3(0, 0, 0);
+            var point = new SN.Vector3(100, 0, 100);
             var shapes = new SN.Vector3(300, 300, 300);
             Block block = new Block(point, shapes);
-            blocks.Add(new Block(point, shapes));
+            blocks.Add(block);
+
+            point = new SN.Vector3(500, 0, 100);
+            shapes = new SN.Vector3(500, 700, 100);
+            block = new Block(point, shapes);
+            blocks.Add(block);
+
+            point = new SN.Vector3(100, 0, 700);
+            shapes = new SN.Vector3(100, 100, 100);
+            block = new Block(point, shapes);
+            blocks.Add(block);
 
             List<Tuple<SN.Vector3, SN.Vector3>> l = block.GetEdges();
             foreach (var p in l)
             {
-
                 Console.WriteLine("p: " + p.ToString());
             }       
         }
@@ -54,57 +63,32 @@ namespace GKFOpenTk
             var state = Keyboard.GetState();
             if (state.IsKeyDown(Key.W))
             {
-                var attitude = camera.GetAttitude();
-               // attitude.Z += step;
-                attitude += camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 0, 0.03f));
-                camera.SetAttitude(attitude);
-                Console.WriteLine("attitude = " + camera.GetAttitude().ToString());
+                camera.Rotations.X += (float)Math.PI / 2 / 10;
+                Console.WriteLine("Rotations = " + camera.Rotations);
             } 
             else if (state.IsKeyDown(Key.S))
             {
-                var attitude = camera.GetAttitude();
-               // attitude.Z -= step;
-                attitude -= camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 0, 0.03f));
-                camera.SetAttitude(attitude);
-                Console.WriteLine("attitude = " + camera.GetAttitude().ToString());
+                camera.Rotations.X -= (float)Math.PI / 2 / 10;
+                Console.WriteLine("Rotations = " + camera.Rotations);
             }
             else if (state.IsKeyDown(Key.A))
             {
-                var attitude = camera.Attitude;
-                var alfa = -0.05;
-                var m = camera.GetOYRotMatrix((float)Math.Cos(alfa), (float)Math.Sin(alfa));
-                var mT = SN.Matrix4x4.Transpose(m);
-                var vec = SN.Vector4.Transform(new SN.Vector4(attitude, 1), m);
-                var v = new SN.Vector3(vec.X, vec.Y, vec.Z);
-                //var Beta = 0.01;
-                //var nA = attitude;
-                //nA.X = (float)Math.Cos(Beta) * attitude.X - (float)Math.Sin(Beta) * attitude.Z;
-                // nA.Z = (float)Math.Sin(Beta) * attitude.X +  (float)Math.Cos(Beta) * attitude.Z;
-                //attitude.X -= step/10;
-               // attitude -= camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0.03f, 0, 0));
-                camera.SetAttitude(v);
-                Console.WriteLine("attitude = " + camera.GetAttitude().ToString());
+                camera.Rotations.Y -= (float)Math.PI / 2 / 10;
+                Console.WriteLine("Rotations = " + camera.Rotations);
             }
             else if (state.IsKeyDown(Key.D))
             {
-                var attitude = camera.Attitude;
-                var alfa = 0.05;
-                var m = camera.GetOYRotMatrix((float)Math.Cos(alfa), (float)Math.Sin(alfa));
-                var vec = SN.Vector4.Transform(new SN.Vector4(attitude, 0), m);
-                var v = new SN.Vector3(vec.X, vec.Y, vec.Z);
-                //var Beta = 0.01;
-                //var nA = attitude;
-                //nA.X = (float)Math.Cos(Beta) * attitude.X - (float)Math.Sin(Beta) * attitude.Z;
-                // nA.Z = (float)Math.Sin(Beta) * attitude.X +  (float)Math.Cos(Beta) * attitude.Z;
-                //attitude.X -= step/10;
-                // attitude -= camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0.03f, 0, 0));
-                camera.SetAttitude(v);
-                Console.WriteLine("attitude = " + camera.GetAttitude().ToString());
-                // var attitude = camera.GetAttitude();
-                //// attitude.X += step;
-                // attitude += camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0.03f, 0, 0));
-                // camera.SetAttitude(attitude);
-                // Console.WriteLine("attitude = " + camera.GetAttitude().ToString());
+                camera.Rotations.Y += (float)Math.PI / 2 / 10;
+                Console.WriteLine("Rotations = " + camera.Rotations);
+            }
+            else if (state.IsKeyDown(Key.E))
+            {
+                camera.Rotations.Z += (float)Math.PI / 2 / 10;
+                Console.WriteLine("Rotations = " + camera.Rotations);   
+            }
+            else if (state.IsKeyDown(Key.Q))
+            {
+                camera.Rotations.Z -= (float)Math.PI / 2 / 10;
             }
 
 
@@ -112,7 +96,8 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.L))
             {
                 var point = camera.Position;
-                var move = Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(5, 0, 0));
+                var move = Helper.MakeRotations(camera.Rotations, new SN.Vector3(5, 0, 0));
+                //var move = Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(5, 0, 0));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
@@ -120,7 +105,8 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.J))
             {
                 var point = camera.Position;
-                var move = -Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(5, 0, 0));
+                var move = -Helper.MakeRotations(camera.Rotations, new SN.Vector3(5, 0, 0));
+                //var move = -Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(5, 0, 0));
                 point += move;
                 Console.WriteLine("move = " + move);
                 camera.SetPoint(point);
@@ -128,7 +114,8 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.I))
             {
                 var point = camera.Position;
-                var move = Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 0, 5));
+                var move = Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 0, 5));
+                //var move = Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 0, 5));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
@@ -136,21 +123,24 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.K))
             {
                 var point = camera.Position;
-                var move = -Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 0, 5));
+                var move = -Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 0, 5));
+                //var move = -Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 0, 5));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
             }
             else if (state.IsKeyDown(Key.O)) {
                 var point = camera.Position;
-                var move = Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 5, 0));
+                var move = Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 5, 0));
+                //var move = Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 5, 0));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
             }
             else if (state.IsKeyDown(Key.U)) {
                 var point = camera.Position;
-                var move = -Helper.TransformRelativeMoveToNonRelative(camera.Attitude, new SN.Vector3(0, 5, 0));
+                var move = -Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 5, 0));
+                //var move = -Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 5, 0));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
@@ -171,17 +161,12 @@ namespace GKFOpenTk
 
         private void Window_UpdateFrame(object sender, FrameEventArgs e)
         {
-            //  Console.WriteLine("Update");
             // Get current state
             keyboardState = OpenTK.Input.Keyboard.GetState();
 
             // Check Key Presses
             if (KeyPress(Key.Right))
             {
-                // move position camera right
-                //  var p = this.camera.Position;
-                camera.MapRelativeMoveToNonRelativeMove(new SN.Vector3(0, 0, 0));
-
                 // Store current state for next comparison;
                 lastKeyboardState = keyboardState;
             }
@@ -205,13 +190,13 @@ namespace GKFOpenTk
                     var p = block.GetEdges()[i];
                     var a = p.Item1;
                     var b = p.Item2;
+                    if (!camera.IsVisible(a) || !camera.IsVisible(b))
+                    {
+                        continue;
+                    }
 
                     var pA = camera.ComputePointOnPlane(a);
                     var pB = camera.ComputePointOnPlane(b);
-
-
-                    //var pA = camera.MapPointToPlate(a);
-                    //var pB = camera.MapPointToPlate(b);
 
 
                     Color color = Color.Red;
@@ -252,7 +237,7 @@ namespace GKFOpenTk
             }
 
 
-            this.drawoXYZ();
+            //this.drawoXYZ();
 
             GL.Flush();
             window.SwapBuffers();

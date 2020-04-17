@@ -9,6 +9,57 @@ namespace GKFOpenTk
 {
     public static class Helper
     {
+        public static Vector3 MakeNonRelativeVecFromRelative(Vector3 rotations, Vector3 vector)
+        {
+            var rot = rotations;
+            var v = Helper.MakeRotations(rotations, vector);
+            return v;
+        }
+        public static Vector3 MakeRotations(Vector3 rotations, Vector3 vector)
+        {
+            //
+            // OX - clock-reverse direction
+            // OY - clock direction
+            // OZ - clock-reverse direction
+            //
+
+            var sinAlfa = (float) Math.Sin(rotations.X);
+            var cosAlfa = (float) Math.Cos(rotations.X);
+            var mX = Helper.RotXMatrix(sinAlfa, cosAlfa);
+            var mXT = Matrix4x4.Transpose(mX);
+
+            var sinBeta = (float)Math.Sin(rotations.Y);
+            var cosBeta = (float)Math.Cos(rotations.Y);
+            var mY = Helper.RotYMatrix(sinBeta, cosBeta);
+            var mYT = Matrix4x4.Transpose(mY);
+
+            var sinGama = (float)Math.Sin(rotations.Z);
+            var cosGama = (float)Math.Cos(rotations.Z);
+            var mZ = Helper.RotZMatrix(sinGama, cosGama);
+            var mZT = Matrix4x4.Transpose(mZ);
+
+            var m = mYT * mXT * mZT;
+
+            var v4 = Vector4.Transform(new Vector4(vector, 1), m);
+            var v = new Vector3(v4.X, v4.Y, v4.Z);
+            return v;
+        }
+        public static Vector3 RotAroundY(Vector3 vector, float sinAngle, float cosAngle)
+        {
+            var m = Helper.RotYMatrix(sinAngle, cosAngle);
+            var mT = Matrix4x4.Transpose(m);
+            var v4 = Vector4.Transform(new Vector4(vector, 1), mT);
+            var v = new Vector3(v4.X, v4.Y, v4.Z);
+            return v;
+        }
+        public static Vector3 RotAroundX(Vector3 vector, float sinAngle, float cosAngle)
+        {
+            var m = Helper.RotXMatrix(sinAngle, cosAngle);
+            var mT = Matrix4x4.Transpose(m);
+            var v4 = Vector4.Transform(new Vector4(vector, 1), mT);
+            var v = new Vector3(v4.X, v4.Y, v4.Z);
+            return v;
+        }
         public static Vector3 FindCrossWithXY(Vector3 eye, Vector3 point)
         {
             var CA = new Vector3((point.X  - eye.X), (point.Y - eye.Y), (point.Z - eye.Z));
@@ -20,6 +71,12 @@ namespace GKFOpenTk
         public static Vector3 TransformRelativeMoveToNonRelative(Vector3 toAttitude, Vector3 move)
         {
             var fromAttitude = new Vector3(0, 0, 1);
+
+            var sinAroundX = Helper.SinAroundX(fromAttitude, toAttitude);
+            var cosAroundX = Helper.CosAroundX(fromAttitude, toAttitude);
+            var oxRot = Helper.RotXMatrix(sinAroundX, cosAroundX);
+            var oxTRot = Matrix4x4.Transpose(oxRot);
+            Console.WriteLine("oxRot = " + oxRot);
 
             var sinAroundY = Helper.SinAroundY(fromAttitude, toAttitude);
             var cosAroundY = Helper.CosAroundY(fromAttitude, toAttitude);
@@ -33,10 +90,17 @@ namespace GKFOpenTk
             var ozTRot = Matrix4x4.Transpose(ozRot);
             Console.WriteLine("ozRot = " + ozRot);
 
-            var mod = oyTRot * ozTRot;
+            var mod = oxTRot * oyTRot * ozTRot;
             var v4 = Vector4.Transform(new Vector4(move, 1), mod);
 
             return new Vector3(v4.X, v4.Y, v4.Z);
+        }
+        public static Vector3 TransformPointToBegin(Vector3 rotations, Vector3 center, Vector3 point)
+        {
+
+            var p = point - center;
+            p = Helper.MakeRotations(rotations * (-1), p);
+            return p;
         }
         public static Vector3 TransformLayoutToBegin(Vector3 fromAtittude, Vector3 fromCenter, Vector3 point)
         {
@@ -84,7 +148,7 @@ namespace GKFOpenTk
                 M34 = -point.Z
             };
         }
-        static Matrix4x4 RotXMatrix(float sinAlfa, float cosAlfa)
+        public static Matrix4x4 RotXMatrix(float sinAlfa, float cosAlfa)
         {
             return new Matrix4x4
             {
@@ -103,7 +167,7 @@ namespace GKFOpenTk
                 M44 = 1
             };
         }
-        static Matrix4x4 RotYMatrix(float sinAlfa, float cosAlfa)
+        public static Matrix4x4 RotYMatrix(float sinAlfa, float cosAlfa)
         {
             return new Matrix4x4
             {
@@ -151,7 +215,7 @@ namespace GKFOpenTk
             }
             return Sin(u, v);
         }
-        static float SinAroundY(Vector3 from, Vector3 to)
+        public static float SinAroundY(Vector3 from, Vector3 to)
         {
             var v = new Vector2(from.X, from.Z);
             var u = new Vector2(to.X, to.Z);
@@ -187,7 +251,7 @@ namespace GKFOpenTk
 
             return Cos(u, v);
         }
-        static float CosAroundY(Vector3 from, Vector3 to) 
+        public static float CosAroundY(Vector3 from, Vector3 to) 
         {
             var u = new Vector2(from.X, from.Z);
             var v = new Vector2(to.X, to.Z);
