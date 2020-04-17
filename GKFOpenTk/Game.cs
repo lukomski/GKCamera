@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Windows.Media.Media3D;
 using SN = System.Numerics;
 using OpenTK.Input;
+using System.IO;
 
 using Accord.Math;
 
@@ -20,8 +21,6 @@ namespace GKFOpenTk
 
         KeyboardState keyboardState, lastKeyboardState;
 
-
-
         public Game(GameWindow window)
         {
             this.window = window;
@@ -32,28 +31,37 @@ namespace GKFOpenTk
             window.RenderFrame += Window_RenderFrame;
             window.UpdateFrame += Window_UpdateFrame;
             window.Closing += Window_Closing;
-            window.KeyPress += Window_KeyPress;         
+            window.KeyPress += Window_KeyPress;
 
-            var point = new SN.Vector3(100, 0, 100);
-            var shapes = new SN.Vector3(300, 300, 300);
-            Block block = new Block(point, shapes);
-            blocks.Add(block);
+            this.ReadFile("../../blocks.txt");   
+        }
+        private void ReadFile(string filename)
+        {
+            try
+            {   // Open the text file using a stream reader.
+                using (StreamReader sr = new StreamReader(filename))
+                {
+                    // Read the stream to a string, and write the string to the console.
+                    //String line = sr.ReadToEnd();
+                    while (sr.Peek() >= 0)
+                    {
+                        //Console.WriteLine(sr.ReadLine());
+                        var line = sr.ReadLine();
+                        var words = line.Split(' ');
+                        
+                        var point = new SN.Vector3(Int32.Parse(words[0]), Int32.Parse(words[1]), Int32.Parse(words[2]));
+                        var shapes = new SN.Vector3(Int32.Parse(words[3]), Int32.Parse(words[4]), Int32.Parse(words[5]));
+                        var block = new Block(point, shapes);
+                        this.blocks.Add(block);
 
-            point = new SN.Vector3(500, 0, 100);
-            shapes = new SN.Vector3(500, 700, 100);
-            block = new Block(point, shapes);
-            blocks.Add(block);
-
-            point = new SN.Vector3(100, 0, 700);
-            shapes = new SN.Vector3(100, 100, 100);
-            block = new Block(point, shapes);
-            blocks.Add(block);
-
-            List<Tuple<SN.Vector3, SN.Vector3>> l = block.GetEdges();
-            foreach (var p in l)
+                    }
+                }
+            }
+            catch (IOException e)
             {
-                Console.WriteLine("p: " + p.ToString());
-            }       
+                Console.WriteLine("The file could not be read:");
+                Console.WriteLine(e.Message);
+            }
         }
 
         private void Window_KeyPress(object sender, KeyPressEventArgs e)
@@ -106,7 +114,6 @@ namespace GKFOpenTk
             {
                 var point = camera.Position;
                 var move = -Helper.MakeRotations(camera.Rotations, new SN.Vector3(5, 0, 0));
-                //var move = -Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(5, 0, 0));
                 point += move;
                 Console.WriteLine("move = " + move);
                 camera.SetPoint(point);
@@ -115,7 +122,6 @@ namespace GKFOpenTk
             {
                 var point = camera.Position;
                 var move = Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 0, 5));
-                //var move = Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 0, 5));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
@@ -124,7 +130,6 @@ namespace GKFOpenTk
             {
                 var point = camera.Position;
                 var move = -Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 0, 5));
-                //var move = -Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 0, 5));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
@@ -132,7 +137,6 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.O)) {
                 var point = camera.Position;
                 var move = Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 5, 0));
-                //var move = Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 5, 0));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
@@ -140,7 +144,6 @@ namespace GKFOpenTk
             else if (state.IsKeyDown(Key.U)) {
                 var point = camera.Position;
                 var move = -Helper.MakeRotations(camera.Rotations, new SN.Vector3(0, 5, 0));
-                //var move = -Helper.TransformRelativeMoveToNonRelative(camera.GetAttitude(), new SN.Vector3(0, 5, 0));
                 point += move;
                 camera.SetPoint(point);
                 Console.WriteLine("move = " + move);
@@ -180,7 +183,6 @@ namespace GKFOpenTk
         {
             GL.ClearColor(Color.FromArgb(5, 5, 25));
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            //this.DrawLine(new System.Numerics.Vector2(-300, 300), new SN.Vector2(1 * window.Width / 2, -1 * window.Height/2), Color.Purple);
 
             foreach (Block block in blocks)
             {
